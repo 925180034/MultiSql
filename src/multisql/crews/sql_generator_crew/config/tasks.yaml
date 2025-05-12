@@ -1,0 +1,17 @@
+compose_sql:
+  description: >
+    Convert the analyzed query intent and schema elements into a valid SQL query.
+    Ensure correct handling of joins, conditions, aggregations, and other operations.
+  expected_output: >
+    A valid SQL query that accurately represents the user's natural language query intent.
+  agent: sql_composer
+
+optimize_sql:
+  description: >
+    Review and optimize the generated SQL query for performance and correctness.
+    Identify and address potential inefficiencies, ensure proper indexing opportunities.
+  expected_output: >
+    An optimized SQL query with explanations of optimization decisions and performance considerations.
+  agent: sql_optimizer
+  context:
+    - compose_sql

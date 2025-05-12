@@ -1,0 +1,17 @@
+analyze_intent:
+  description: >
+    Analyze the user's natural language query, identifying the main intent, query type, and complexity.
+    Determine if it includes aggregation operations, nested queries, grouping, sorting, or other advanced requirements.
+  expected_output: >
+    A detailed structured report describing the query intent, including main goals, condition types, and special operation requirements.
+  agent: intent_analyzer
+
+identify_schema_elements:
+  description: >
+    Identify database elements referenced in the query, including tables, columns, and their relationships.
+    Map natural language descriptions to actual database schema elements.
+  expected_output: >
+    A report listing all tables and columns involved in the query, and their correspondence with natural language expressions.
+  agent: schema_explorer
+  context:
+    - analyze_intent

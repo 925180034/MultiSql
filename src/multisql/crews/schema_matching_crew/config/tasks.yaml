@@ -1,0 +1,18 @@
+analyze_relationships:
+  description: >
+    Analyze the relationships between tables in the database schema. 
+    Identify the primary and foreign key relationships and determine the optimal join paths for the query.
+  expected_output: >
+    A detailed report of table relationships relevant to the query, including optimal join paths and key linkages.
+  agent: relationship_analyst
+
+perform_semantic_matching:
+  description: >
+    Match natural language elements in the query to database schema elements.
+    Identify synonyms, contextual references, and implied data elements.
+  expected_output: >
+    A comprehensive mapping between natural language expressions and database schema elements,
+    including confidence scores and alternative interpretations when applicable.
+  agent: semantic_matcher
+  context:
+    - analyze_relationships
