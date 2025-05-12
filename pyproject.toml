@@ -1,0 +1,23 @@
+[project]
+name = "multisql"
+version = "0.1.0"
+description = "MultiSql using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "crewai[tools]>=0.119.0,<1.0.0"
+]
+
+[project.scripts]
+multisql = "multisql.main:run"
+run_crew = "multisql.main:run"
+train = "multisql.main:train"
+replay = "multisql.main:replay"
+test = "multisql.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
