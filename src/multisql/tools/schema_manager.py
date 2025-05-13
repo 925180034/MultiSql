@@ -44,49 +44,74 @@ class SchemaManager:
     
     def _extract_schema_from_db(self, db_id: str) -> Dict[str, Any]:
         """Extract schema information from database"""
-        # This is a simplified version, in production you'd connect to actual DB
-        # For demo, we'll return a mock schema
+        db_path = f"{self.db_path}/{db_id}/{db_id}.sqlite"
         schema = {
             "db_id": db_id,
-            "tables": [
-                {
-                    "name": "employees",
-                    "columns": [
-                        {"name": "id", "type": "INTEGER", "table": "employees"},
-                        {"name": "name", "type": "TEXT", "table": "employees"},
-                        {"name": "salary", "type": "INTEGER", "table": "employees"},
-                        {"name": "department_id", "type": "INTEGER", "table": "employees"}
-                    ],
-                    "primary_keys": ["id"],
-                    "foreign_keys": [
-                        {"column": "department_id", "ref_table": "departments", "ref_column": "id"}
-                    ]
-                },
-                {
-                    "name": "departments",
-                    "columns": [
-                        {"name": "id", "type": "INTEGER", "table": "departments"},
-                        {"name": "name", "type": "TEXT", "table": "departments"},
-                        {"name": "location", "type": "TEXT", "table": "departments"}
-                    ],
-                    "primary_keys": ["id"],
-                    "foreign_keys": []
-                }
-            ],
-            "relationships": [
-                {
-                    "from_table": "employees",
-                    "from_column": "department_id",
-                    "to_table": "departments",
-                    "to_column": "id"
-                }
-            ]
+            "tables": [],
+            "relationships": []
         }
         
-        # In production, you would extract this from actual database:
-        # db_path = f"{self.db_path}/{db_id}/{db_id}.sqlite"
-        # Connect to database and extract schema
-        
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            
+            # Get all tables
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+            tables = cursor.fetchall()
+            
+            for table in tables:
+                table_name = table[0]
+                
+                # Get table structure
+                cursor.execute(f"PRAGMA table_info('{table_name}')")
+                columns = cursor.fetchall()
+                
+                # Get sample data
+                cursor.execute(f"SELECT * FROM '{table_name}' LIMIT 3")
+                sample_rows = cursor.fetchall()
+                sample_data = []
+                for row in sample_rows:
+                    sample_data.append(dict(zip([col[1] for col in columns], row)))
+                
+                # Get primary keys
+                cursor.execute(f"PRAGMA table_info('{table_name}')")
+                primary_keys = [col[1] for col in cursor.fetchall() if col[5] > 0]
+                
+                # Get foreign keys
+                cursor.execute(f"PRAGMA foreign_key_list('{table_name}')")
+                foreign_keys = []
+                for fk in cursor.fetchall():
+                    foreign_keys.append({
+                        "column": fk[3],
+                        "ref_table": fk[2],
+                        "ref_column": fk[4]
+                    })
+                
+                # Add table info
+                schema["tables"].append({
+                    "name": table_name,
+                    "columns": [{"name": col[1], "type": col[2], "table": table_name} for col in columns],
+                    "primary_keys": primary_keys,
+                    "foreign_keys": foreign_keys,
+                    "sample_rows": sample_data
+                })
+            
+            # Build table relationships
+            for table in schema["tables"]:
+                for fk in table["foreign_keys"]:
+                    relationship = {
+                        "from_table": table["name"],
+                        "from_column": fk["column"],
+                        "to_table": fk["ref_table"],
+                        "to_column": fk["ref_column"]
+                    }
+                    schema["relationships"].append(relationship)
+            
+            conn.close()
+            
+        except Exception as e:
+            print(f"Error extracting schema for {db_id}: {str(e)}")
+            
         return schema
     
     def get_optimal_join_path(self, db_schema: Dict[str, Any], tables: List[str]) -> List[Dict[str, Any]]:

@@ -25,10 +25,10 @@ def run():
     else:
         run_original_crew()
 
-def run_original_crew():
+def run_original_crew(topic="AI LLMs"):
     """Run the original multisql crew."""
     inputs = {
-        'topic': 'AI LLMs',
+        'topic': topic,
         'current_year': str(datetime.now().year)
     }
     
@@ -135,6 +135,40 @@ def test():
         Multisql().crew().test(n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=inputs)
     except Exception as e:
         raise Exception(f"An error occurred while testing the crew: {e}")
+    
+def main():
+    # Create the main parser
+    main_parser = argparse.ArgumentParser(description="MultiSQL - NL to SQL translation system")
+    subparsers = main_parser.add_subparsers(dest="command", help="Sub-commands")
+    
+    # Original crew parser
+    crew_parser = subparsers.add_parser("crew", help="Run the original multisql crew")
+    crew_parser.add_argument("--topic", default="AI LLMs", help="Research topic")
+    
+    # NL2SQL parser
+    nl2sql_parser = subparsers.add_parser("nl2sql", help="Run the NL to SQL translation flow")
+    nl2sql_parser.add_argument("--query", type=str, help="Natural language query")
+    nl2sql_parser.add_argument("--db-id", type=str, help="Database ID")
+    nl2sql_parser.add_argument("--db-dir", type=str, default="./spider/database", help="Database directory")
+    nl2sql_parser.add_argument("--schema-cache", type=str, default="./schema_cache.json", help="Schema cache file")
+    
+    # Train parser
+    train_parser = subparsers.add_parser("train", help="Train the crew")
+    train_parser.add_argument("iterations", type=int, help="Number of iterations")
+    train_parser.add_argument("filename", help="Output filename")
+    
+    # Parse arguments
+    args = main_parser.parse_args()
+    
+    # Execute appropriate command
+    if args.command == "crew":
+        run_original_crew(args.topic)
+    elif args.command == "nl2sql":
+        run_nl2sql(args)
+    elif args.command == "train":
+        train_crew(args.iterations, args.filename)
+    else:
+        main_parser.print_help()
 
 if __name__ == "__main__":
     run()

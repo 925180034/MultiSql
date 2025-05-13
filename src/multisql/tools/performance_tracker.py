@@ -9,14 +9,7 @@ class PerformanceTracker:
         self.log_file = log_file
         
     def log_performance(self, state, execution_success=None, execution_time=None):
-        """
-        Log query processing performance
-        
-        Parameters:
-            state: Query processing state
-            execution_success: Whether SQL execution was successful
-            execution_time: Execution time dictionary
-        """
+        """Log query processing performance"""
         log_entry = {
             "timestamp": datetime.now().isoformat(),
             "nl_query": state.nl_query,
@@ -32,10 +25,14 @@ class PerformanceTracker:
         if execution_success is not None:
             log_entry["execution_success"] = execution_success
             
+        # Ensure log directory exists
+        log_dir = os.path.dirname(self.log_file)
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+            
         # Append to log file
         with open(self.log_file, "a") as f:
-            f.write(json.dumps(log_entry) + "
-")
+            f.write(json.dumps(log_entry) + "\n")
     
     def analyze_performance_trends(self):
         """Analyze performance trends, optimize decision model"""
